@@ -12,7 +12,7 @@ Los proyectos que se están trabajando en paralelo son:
 
 # Tareas para 18/07/2020
 
-## Obtención de tweets
+## Obtención de twits
 
 **Responsable**: Dani
 
