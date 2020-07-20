@@ -1,4 +1,4 @@
-# Análisis de tweeter
+# Análisis de Twitter
 
 [TOC]
 
