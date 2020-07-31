@@ -39,3 +39,6 @@ Dado un texto en español:
 
 - quitar acentos
 - revisar ortografía
+
+# Siguientes tareas
+
