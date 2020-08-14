@@ -1,0 +1,1 @@
+"Select["""", DateWithinQ[Yesterday, #1[""Date""]] & ][All, ""ID""]","Select["""", DateWithinQ[Yesterday, #1[""Date""]] & ][TextWords[], {}]"
