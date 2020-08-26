@@ -1,10 +1,39 @@
 """
-Funciones para analizar artículos publicados
-en twitter por diferentes periódicos.
+Funciones para obtener el contendio de diferentes sitios web (revisar atributos)
+
+NOTA: url_2_BeautifulSoup no puede ser llamada desde jupyter lab.
+
+Atributos:
+
+    - websites: Lista de sitios web que se pueden procesar
+    
+Funciones:
+(para una descripción detallada ver docstring the las funciones)
+
+    - url_2_BeautifulSoup:
+      Dado un url, retorna un BeautifulSoup
+      si el sitio está en 'websites'
+      o error.
 
 Dependencias:
-    - BeautifulSoup
-    - requests_html 
+
+    - BeautifulSoup:
+      Se usa para procesar el contenido html.
+
+    - requests_html:
+      Se usa para obtener el contenido de las url.
+
+    - errors:
+      Módulo donde se definen los errores que pueden aparecer.
+
+Atributos privados:
+
+    - __websites_2_readFunctions: Diccionario que mapea los sitios web a funciones de lectura
+
+Funciones privadas:
+
+    - __read_url
+    - __read_and_render_url
 """
 
 from bs4 import BeautifulSoup
@@ -18,44 +47,23 @@ websites=["aristeguinoticias.com",
 
 def __read_url(url):
     """
-    Lee una url con HTMLSession y retorna un BeautifulSoup
+    Retorna el contenido de la url obtenido con HTMLSession.
     """
     session = HTMLSession()
-    r=session.get(url)
-    return BeautifulSoup(r.html.html,features="lxml")
+    return session.get(url)
 
-"""
-async def __render_and_read_url(url):
-    'Lee una url con AsyncHTMLSession, renderiza y retorna un BeautifulSoup'
-    asession = AsyncHTMLSession()
-    r=await asession.get(url)
-    await r.html.arender(sleep=10,keep_page=True,scrolldown=5)
-    soup = BeautifulSoup(r.html.html)
-    return soup
-"""
-
-def __render_and_read_url(url):
+def __read_and_render_url(url):
     """
-    Lee una url con AsyncHTMLSession, renderiza y retorna un BeautifulSoup
+    Retorna el contenido de la url obtenido y renderizado con HTMLSession.
     """
-    session = HTMLSession()
-    r = session.get(url)
+    r=__read_url(url)
     r.html.render()
-    soup = BeautifulSoup(r.html.html)
-    return soup
-
-async def main(url):
-    await asyncio.gather(__render_and_read_url(url))
-
-__is_websites_asynch={
-    "aristeguinoticias.com": True,
-    "www.jornada.com.mx": False,
-    "www.forbes.com.mx": True}
+    return r
 
 __websites_2_readFunctions={
-    "aristeguinoticias.com": __render_and_read_url,
+    "aristeguinoticias.com": __read_and_render_url,
     "www.jornada.com.mx": __read_url,
-    "www.forbes.com.mx": __render_and_read_url}
+    "www.forbes.com.mx": __read_and_render_url}
 
 
 def url_2_BeautifulSoup(url):
@@ -70,6 +78,7 @@ def url_2_BeautifulSoup(url):
     Output:
         - (BeautifulSoup object)
         - website (str)
+
     Error:
         - errors.Non_Avalible_Site
 
@@ -81,20 +90,6 @@ def url_2_BeautifulSoup(url):
     website=url.split("/")[2]
     if(website not in websites):
         raise errors.Not_Avalible_Site(website)
-    #read_function= __websites_2_readFunctions[website]
-    if(__is_websites_asynch[website]):
-        result=__render_and_read_url(url)
-        """
-        # python V < 3.8
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(main(url))
-        loop.close()
-        """
-        """
-        # python V 3.8
-        asyncio.run(main(url))
-        """
-    else:
-        result=__read_url(url)
-    return result
-#    return read_function(url)
+    read_function= __websites_2_readFunctions[website]
+    r=read_function(url)
+    return BeautifulSoup(r.html.html,features="lxml")
