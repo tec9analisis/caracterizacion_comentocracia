@@ -1,6 +1,10 @@
 """
 Funciones para analizar artículos publicados
 en twitter por diferentes periódicos.
+
+Dependencias:
+    - BeautifulSoup
+    - requests_html 
 """
 
 from bs4 import BeautifulSoup
@@ -20,15 +24,28 @@ def __read_url(url):
     r=session.get(url)
     return BeautifulSoup(r.html.html,features="lxml")
 
+"""
 async def __render_and_read_url(url):
-    """
-    Lee una url con AsyncHTMLSession, renderiza y retorna un BeautifulSoup
-    """
+    'Lee una url con AsyncHTMLSession, renderiza y retorna un BeautifulSoup'
     asession = AsyncHTMLSession()
     r=await asession.get(url)
     await r.html.arender(sleep=10,keep_page=True,scrolldown=5)
     soup = BeautifulSoup(r.html.html)
     return soup
+"""
+
+def __render_and_read_url(url):
+    """
+    Lee una url con AsyncHTMLSession, renderiza y retorna un BeautifulSoup
+    """
+    session = HTMLSession()
+    r = session.get(url)
+    r.html.render()
+    soup = BeautifulSoup(r.html.html)
+    return soup
+
+async def main(url):
+    await asyncio.gather(__render_and_read_url(url))
 
 __is_websites_asynch={
     "aristeguinoticias.com": True,
@@ -39,6 +56,7 @@ __websites_2_readFunctions={
     "aristeguinoticias.com": __render_and_read_url,
     "www.jornada.com.mx": __read_url,
     "www.forbes.com.mx": __render_and_read_url}
+
 
 def url_2_BeautifulSoup(url):
     """
@@ -52,7 +70,6 @@ def url_2_BeautifulSoup(url):
     Output:
         - (BeautifulSoup object)
         - website (str)
-
     Error:
         - errors.Non_Avalible_Site
 
@@ -64,15 +81,20 @@ def url_2_BeautifulSoup(url):
     website=url.split("/")[2]
     if(website not in websites):
         raise errors.Not_Avalible_Site(website)
-    read_function= __websites_2_readFunctions[website]
-    if(__is_websites_asynch):
+    #read_function= __websites_2_readFunctions[website]
+    if(__is_websites_asynch[website]):
+        result=__render_and_read_url(url)
+        """
+        # python V < 3.8
         loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(read_function(url))
+        result = loop.run_until_complete(main(url))
         loop.close()
-
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(main())
-        loop.close()
+        """
+        """
+        # python V 3.8
+        asyncio.run(main(url))
+        """
     else:
-        result=read_function(url)
+        result=__read_url(url)
     return result
+#    return read_function(url)
