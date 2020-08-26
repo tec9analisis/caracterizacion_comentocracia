@@ -1,14 +1,29 @@
 """
+|------------------------------------------------------------------|
+| tweet_links.py                                                   |
+| tecn9                                                            |
+| https://github.com/tec9analisis/caracterizacion_comentocracia    |
+|------------------------------------------------------------------|
+
 Funciones para obtener el contendio de diferentes sitios web (revisar atributos)
 
-NOTA: url_2_BeautifulSoup no puede ser llamada desde jupyter lab.
+NOTAS:
+
+    - url_2_BeautifulSoup no puede ser llamada desde jupyter lab.
+
+    - Para renderizar un sitio web en la función __read_and_render_url usa:
+      r.html.render(sleep=10,keep_page=True,scrolldown=5)
+      sin embargo puede que los parámetros necesarios varíen dependiendo
+      de la velocidad de tu conección a internet.
+      De preferencia CIERRA PESTAÑAS QUE ALENTEN TU CONEXIÓN como youtube, etc.
 
 Atributos:
 
-    - websites: Lista de sitios web que se pueden procesar
+    - websites:
+      Lista de sitios web que se pueden procesar
     
 Funciones:
-(para una descripción detallada ver docstring the las funciones)
+(para una descripción detallada ver docstring de las funciones)
 
     - url_2_BeautifulSoup:
       Dado un url, retorna un BeautifulSoup
@@ -28,7 +43,8 @@ Dependencias:
 
 Atributos privados:
 
-    - __websites_2_readFunctions: Diccionario que mapea los sitios web a funciones de lectura
+    - __websites_2_readFunctions:
+      Diccionario que mapea los sitios web a funciones de lectura
 
 Funciones privadas:
 
@@ -37,7 +53,7 @@ Funciones privadas:
 """
 
 from bs4 import BeautifulSoup
-from requests_html import HTMLSession, AsyncHTMLSession
+import requests_html as rhtml
 import errors
 import asyncio
 
@@ -49,15 +65,25 @@ def __read_url(url):
     """
     Retorna el contenido de la url obtenido con HTMLSession.
     """
-    session = HTMLSession()
+    session = rhtml.HTMLSession()
     return session.get(url)
 
-def __read_and_render_url(url):
+def __read_and_render_url(url,timeout=16,sleep=10,keep_page=True,scrolldown=5):
     """
     Retorna el contenido de la url obtenido y renderizado con HTMLSession.
+
+    A escepción de timeout, todos los parámetros predefinidos se usan siempre.
+
+    timeout solo se usa si huvo un error por conecciónde a internet.
     """
     r=__read_url(url)
-    r.html.render()
+    try:
+        r.html.render(sleep=sleep,keep_page=keep_page,scrolldown=scrolldown)
+    except rhtml.MaxRetries as e:
+        print("\tRender error:'{}'\n\tNow re-trying with 'timeout={}'".format(e,timeout))
+        r.html.render(timeout=timeout,sleep=sleep,keep_page=keep_page,scrolldown=scrolldown)
+    except:
+        raise
     return r
 
 __websites_2_readFunctions={
