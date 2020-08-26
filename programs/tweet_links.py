@@ -6,6 +6,7 @@ en twitter por diferentes periódicos.
 from bs4 import BeautifulSoup
 from requests_html import HTMLSession, AsyncHTMLSession
 import errors
+import asyncio
 
 websites=["aristeguinoticias.com",
           "www.jornada.com.mx",
@@ -67,6 +68,10 @@ def url_2_BeautifulSoup(url):
     if(__is_websites_asynch):
         loop = asyncio.get_event_loop()
         result = loop.run_until_complete(read_function(url))
+        loop.close()
+
+        loop = asyncio.get_event_loop()
+        result = loop.run_until_complete(main())
         loop.close()
     else:
         result=read_function(url)
